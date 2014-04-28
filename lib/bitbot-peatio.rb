@@ -4,10 +4,12 @@ require 'peatio_client'
 module BitBot
   module Peatio
 
-    ### INFO ###
     def ticker
-      map = {sell: :ask, buy: :bid}
-      original = client.get("/api/v2/tickers/#{market}")['ticker'] || {}
+      map  = {sell: :ask, buy: :bid}
+      resp = client.get("/api/v2/tickers/#{market}")
+      check_response(resp)
+
+      original = resp['ticker']
       Ticker.new rekey(original, map).merge(original: original, agent: self)
     end
 
@@ -119,22 +121,14 @@ module BitBot
     private
 
     def check_response(response)
-      return if response.is_a?(Array)
-      if error_msg = response['message']
-        case error_msg
-        when 'Could not find a key matching the given X-BFX-APIKEY.'
-          raise UnauthorizedError, error_msg
-        when 'No such order found.'
-          raise OrderNotFoundError, error_msg
-        when 'Order could not be cancelled.'
-          raise CanceledError, error_msg
-        when 'Invalid order: not enough balance'
-          raise BalanceError, error_msg
-        when 'Nonce is too small.'
-          raise NonceError, error_msg
-        else
-          raise Error, error_msg
-        end
+      return unless response.has_key?('error')
+
+      code = response['error']['code']
+      msg  = response['error']['message']
+      case code
+      when 2001 then raise UnauthorizedError, msg
+      when 2003 then raise CanceledError, msg
+      else raise Error, msg
       end
     end
 
