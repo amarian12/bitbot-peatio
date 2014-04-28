@@ -76,9 +76,8 @@ module BitBot
       build_account(resp)
     end
 
-    ### HELPER METHODS ###
     def currency
-      'USD'
+      market[3,3].upcase
     end
 
     def rate
