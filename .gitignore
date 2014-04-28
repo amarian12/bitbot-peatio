@@ -1,3 +1,5 @@
 .bundle
 test
 test.rb
+.tags
+mongoid.yml
