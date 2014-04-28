@@ -62,7 +62,7 @@ module BitBot
     end
 
     def orders
-      resp = client.orders
+      resp = client.get '/api/v2/orders', market: market
       check_response(resp)
 
       resp.collect do |hash|
@@ -101,7 +101,7 @@ module BitBot
     private
 
     def check_response(response)
-      return unless response.has_key?('error')
+      return unless response.is_a?(Hash) && response.has_key?('error')
 
       code = response['error']['code']
       msg  = response['error']['message']
