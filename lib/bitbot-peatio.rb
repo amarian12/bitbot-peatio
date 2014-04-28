@@ -56,10 +56,8 @@ module BitBot
 
     def sync(order)
       order_id = order.is_a?(BitBot::Order) ? order.order_id : order.to_i
-      resp = client.status order_id
+      resp = client.get '/api/v2/order', id: order_id
       check_response(resp)
-
-      #TODO: bitfinex API return wrong side when order is executed, should re-check here!
       build_order resp
     end
 
