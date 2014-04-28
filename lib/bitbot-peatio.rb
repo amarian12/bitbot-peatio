@@ -137,7 +137,7 @@ module BitBot
     end
 
     def build_balance(acct)
-      Balance.new(currency: acct['currency'], amount: acct['balance'], locked: acct['locked'], agent: self, original: acct)
+      Balance.new(currency: acct['currency'].upcase, amount: acct['balance'], locked: acct['locked'], agent: self, original: acct)
     end
 
   end
