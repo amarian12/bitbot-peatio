@@ -14,17 +14,17 @@ module BitBot
     end
 
     def offers
-      resp = client.orderbook 'btcusd', limit_bids: 10, limit_asks: 10
+      map  = {created_at: :timestamp, volume: :amount}
+      resp = client.get("/api/v2/order_book", market: market, asks_limit: 10, bids_limit: 10)
       check_response(resp)
 
       asks = resp['asks'].collect do |offer|
-        offer['timestamp'] = offer['timestamp'].to_f
-        Offer.new offer.merge(original: offer, agent: self)
+        Offer.new rekey(offer, map).merge(original: offer, agent: self)
       end
       bids = resp['bids'].collect do |offer|
-        offer['timestamp'] = offer['timestamp'].to_f
-        Offer.new offer.merge(original: offer, agent: self)
+        Offer.new rekey(offer, map).merge(original: offer, agent: self)
       end
+
       {asks: asks, bids: bids}
     end
 
