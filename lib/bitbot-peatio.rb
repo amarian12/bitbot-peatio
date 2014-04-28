@@ -14,7 +14,7 @@ module BitBot
     end
 
     def offers
-      map  = {created_at: :timestamp, volume: :amount}
+      map  = {created_at: :timestamp, remaining_volume: :amount, volume: nil, executed_volume: nil, side: nil, avg_price: nil, market: nil, state: nil}
       resp = client.get("/api/v2/order_book", market: market, asks_limit: 10, bids_limit: 10)
       check_response(resp)
 
