@@ -71,9 +71,8 @@ module BitBot
     end
 
     def account
-      resp = client.balances
+      resp = client.get '/api/v2/members/me'
       check_response(resp)
-
       build_account(resp)
     end
 
@@ -131,16 +130,17 @@ module BitBot
       order
     end
 
-    def build_account(arr)
-      account = Account.new agent: self
-
-      btc_balance = arr.detect{|bln| bln['currency'] == 'btc' && bln['type'] == 'exchange' }
-      usd_balance = arr.detect{|bln| bln['currency'] == 'usd' && bln['type'] == 'exchange' }
-
-      account.balances << Balance.new(currency: 'BTC', amount: btc_balance['amount'], agent: self)
-      account.balances << Balance.new(currency: 'USD', amount: usd_balance['amount'], agent: self)
+    def build_account(member)
+      accounts = member.delete 'accounts'
+      account = Account.new original: member, agent: self
+      account.balances = accounts.map {|acct| build_balance(acct) }
       account
     end
+
+    def build_balance(acct)
+      Balance.new(currency: acct['currency'], amount: acct['balance'], locked: acct['locked'], agent: self, original: acct)
+    end
+
   end
 end
 
