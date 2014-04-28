@@ -39,25 +39,19 @@ module BitBot
     def buy(options)
       resp = client.post '/api/v2/orders', market: market, side: 'buy', volume: options[:amount], price: options[:price]
       check_response(resp)
-
-      resp['type'] = 'exchange limit'
       build_order(resp)
     end
 
     def sell(options)
       resp = client.post '/api/v2/orders', market: market, side: 'sell', volume: options[:amount], price: options[:price]
       check_response(resp)
-
-      resp['type'] = 'exchange limit'
       build_order(resp)
     end
 
     def cancel(order_id)
-      resp = client.cancel(order_id)
+      resp = client.post '/api/v2/order/delete', id: order_id
       check_response(resp)
-
-      order = build_order resp
-      order.status == 'cancelled'
+      build_order(resp)
     end
 
     def sync(order)
@@ -130,6 +124,7 @@ module BitBot
               trades: nil,
               created_at: :timestamp }
       order = Order.new rekey(hash, map).merge(original: hash, agent: self)
+      order.type   = 'exchange limit'
       order.status = case hash['state']
                      when 'wait' then 'open'
                      when 'cancel' then 'cancelled'
