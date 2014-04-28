@@ -36,21 +36,14 @@ module BitBot
       offers[:bids]
     end
 
-
-    ### PRIVATE ###
     def buy(options)
-      raise UnauthorizedError unless client.have_key?
-      amount = options[:amount]
-      price = options[:price]
-      order_type = options[:type] || 'exchange limit'
-      resp = client.order amount, price, order_type
+      resp = client.post '/api/v2/orders', market: market, side: 'buy', volume: options[:amount], price: options[:price]
       check_response(resp)
 
       build_order(resp)
     end
 
     def sell(options)
-      raise UnauthorizedError unless client.have_key?
       amount = options[:amount]
       price = options[:price]
       order_type = options[:type] || 'exchange limit'
@@ -61,7 +54,6 @@ module BitBot
     end
 
     def cancel(order_id)
-      raise UnauthorizedError unless client.have_key?
       resp = client.cancel(order_id)
       check_response(resp)
 
@@ -70,7 +62,6 @@ module BitBot
     end
 
     def sync(order)
-      raise UnauthorizedError unless client.have_key?
       order_id = order.is_a?(BitBot::Order) ? order.order_id : order.to_i
       resp = client.status order_id
       check_response(resp)
@@ -80,7 +71,6 @@ module BitBot
     end
 
     def orders
-      raise UnauthorizedError unless client.have_key?
       resp = client.orders
       check_response(resp)
 
@@ -90,7 +80,6 @@ module BitBot
     end
 
     def account
-      raise UnauthorizedError unless client.have_key?
       resp = client.balances
       check_response(resp)
 
@@ -133,24 +122,20 @@ module BitBot
     end
 
     def build_order(hash)
-      map = { symbol: nil,
-              id: :order_id,
-              exchange: nil,
-              avg_execution_price: :avg_price,
-              is_live: nil,
-              is_cancelled: nil,
-              was_forced: nil,
-              original_amount: :amount,
-              remaining_amount: :remaining,
-              executed_amount: nil
-      }
+      map = { id: :order_id,
+              volume: :amount,
+              remaining_volume: :remaining,
+              executed_volume: nil,
+              state: nil,
+              market: nil,
+              trades: nil,
+              created_at: :timestamp }
       order = Order.new rekey(hash, map).merge(original: hash, agent: self)
-      order.status = if hash['is_live']
-                       'open'
-                     elsif hash['is_cancelled']
-                       'cancelled'
-                     else
-                       'closed'
+      order.type   = 'exchange limit'
+      order.status = case hash['state']
+                     when 'wait' then 'open'
+                     when 'cancel' then 'cancelled'
+                     else 'closed'
                      end
       order
     end
