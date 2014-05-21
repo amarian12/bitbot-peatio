@@ -1,14 +1,9 @@
-PATH
-  remote: ../bitbot
+GIT
+  remote: https://github.com/peatio/bitbot.git
+  revision: 4686717c1c17314789ab77c248887fc6f1056c14
   specs:
     bitbot (0.0.1)
       mongoid
-
-PATH
-  remote: ../peatio-client-ruby
-  specs:
-    peatio_client (0.0.1)
-      activesupport
 
 GEM
   remote: http://ruby.taobao.org/
@@ -20,6 +15,10 @@ GEM
       i18n (~> 0.6, >= 0.6.4)
       multi_json (~> 1.0)
     builder (3.0.4)
+    eventmachine (1.0.3)
+    faye-websocket (0.7.3)
+      eventmachine (>= 0.12.0)
+      websocket-driver (>= 0.3.1)
     i18n (0.6.9)
     minitest (5.3.3)
     mongoid (3.1.6)
@@ -30,7 +29,11 @@ GEM
     moped (1.5.2)
     multi_json (1.9.3)
     origin (1.1.0)
+    peatio_client (0.0.3)
+      activesupport
+      faye-websocket
     tzinfo (0.3.39)
+    websocket-driver (0.3.3)
 
 PLATFORMS
   ruby
@@ -39,4 +42,4 @@ DEPENDENCIES
   bitbot!
   minitest (~> 5.3.3)
   mongoid (~> 3.1.6)
-  peatio_client!
+  peatio_client
