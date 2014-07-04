@@ -37,13 +37,29 @@ module BitBot
     end
 
     def buy(options)
-      resp = client.post '/api/v2/orders', market: market, side: 'buy', volume: options[:amount], price: options[:price]
+      opt = { market: market, side: 'buy', volume: options[:amount] }
+
+      if options[:type] == 'market'
+        opt.merge! ord_type: options[:type]
+      else
+        opt.merge! price: options[:price]
+      end
+
+      resp = client.post '/api/v2/orders', opt
       check_response(resp)
       build_order(resp)
     end
 
     def sell(options)
-      resp = client.post '/api/v2/orders', market: market, side: 'sell', volume: options[:amount], price: options[:price]
+      opt = { market: market, side: 'sell', volume: options[:amount] }
+
+      if options[:type] == 'market'
+        opt.merge! ord_type: options[:type]
+      else
+        opt.merge! price: options[:price]
+      end
+
+      resp = client.post '/api/v2/orders', opt
       check_response(resp)
       build_order(resp)
     end
@@ -78,10 +94,6 @@ module BitBot
 
     def currency
       market[3,3].upcase
-    end
-
-    def rate
-      Settings.rate
     end
 
     def client
