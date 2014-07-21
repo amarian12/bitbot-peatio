@@ -15,7 +15,7 @@ module BitBot
 
     def offers
       resp = client.get("/api/v2/depth", market: market, asks_limit: 10, bids_limit: 10)
-      check resp
+      check_response resp
 
       asks = resp['asks'].reverse.collect do |arr|
         Offer.new price: arr[0], amount: arr[1], original: arr, agent: self
