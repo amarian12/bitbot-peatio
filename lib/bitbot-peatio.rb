@@ -14,15 +14,15 @@ module BitBot
     end
 
     def offers
-      map  = {created_at: :timestamp, remaining_volume: :amount, volume: nil, executed_volume: nil, side: nil, avg_price: nil, market: nil, state: nil}
-      resp = client.get("/api/v2/order_book", market: market, asks_limit: 10, bids_limit: 10)
-      check_response(resp)
+      resp = client.get("/api/v2/depth", market: market, asks_limit: 10, bids_limit: 10)
+      check resp
 
-      asks = resp['asks'].collect do |offer|
-        Offer.new rekey(offer, map).merge(original: offer, agent: self)
+      asks = resp['asks'].reverse.collect do |arr|
+        Offer.new price: arr[0], amount: arr[1], original: arr, agent: self
       end
-      bids = resp['bids'].collect do |offer|
-        Offer.new rekey(offer, map).merge(original: offer, agent: self)
+
+      bids = resp['bids'].collect do |arr|
+        Offer.new price: arr[0], amount: arr[1], original: arr, agent: self
       end
 
       {asks: asks, bids: bids}
