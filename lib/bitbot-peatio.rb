@@ -36,6 +36,16 @@ module BitBot
       offers[:bids]
     end
 
+    def batch_place(orders)
+      opt = { market: market, orders: orders }
+
+      resp = client.post '/api/v2/orders/multi', opt
+      check_response(resp)
+      resp.collect do |item|
+        build_order(item)
+      end
+    end
+
     def buy(options)
       opt = { market: market, side: 'buy', volume: options[:amount] }
 
@@ -68,6 +78,14 @@ module BitBot
       resp = client.post '/api/v2/order/delete', id: order_id
       check_response(resp)
       build_order(resp)
+    end
+
+    def cancel_all
+      resp = client.post '/api/v2/orders/clear'
+      check_response(resp)
+      resp.collect do |item|
+        build_order(item)
+      end
     end
 
     def sync(order)
