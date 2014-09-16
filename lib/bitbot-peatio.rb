@@ -6,7 +6,7 @@ module BitBot
 
     def ticker
       map  = {sell: :ask, buy: :bid}
-      resp = client.get("/api/v2/tickers/#{market}")
+      resp = client.get_public("/api/v2/tickers/#{market}")
       check_response(resp)
 
       original = resp['ticker']
@@ -14,7 +14,7 @@ module BitBot
     end
 
     def offers
-      resp = client.get("/api/v2/depth", market: market, asks_limit: 10, bids_limit: 10)
+      resp = client.get_public("/api/v2/depth", market: market, asks_limit: 10, bids_limit: 10)
       check_response resp
 
       asks = resp['asks'].reverse.collect do |arr|
