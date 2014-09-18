@@ -1,5 +1,6 @@
 require 'bitbot'
 require 'peatio_client'
+require 'thread'
 
 module BitBot
   module Peatio
@@ -39,7 +40,7 @@ module BitBot
     def batch_place(orders)
       opt = { market: market, orders: orders }
 
-      resp = client.post '/api/v2/orders/multi', opt
+      resp = mutex.synchronize { client.post '/api/v2/orders/multi', opt }
       check_response(resp)
       resp.collect do |item|
         build_order(item)
@@ -55,7 +56,7 @@ module BitBot
         opt.merge! price: options[:price]
       end
 
-      resp = client.post '/api/v2/orders', opt
+      resp = mutex.synchronize { client.post '/api/v2/orders', opt }
       check_response(resp)
       build_order(resp)
     end
@@ -69,19 +70,19 @@ module BitBot
         opt.merge! price: options[:price]
       end
 
-      resp = client.post '/api/v2/orders', opt
+      resp = mutex.synchronize { client.post '/api/v2/orders', opt }
       check_response(resp)
       build_order(resp)
     end
 
     def cancel(order_id)
-      resp = client.post '/api/v2/order/delete', id: order_id
+      resp = mutex.synchronize { client.post '/api/v2/order/delete', id: order_id }
       check_response(resp)
       build_order(resp)
     end
 
     def cancel_all
-      resp = client.post '/api/v2/orders/clear'
+      resp = mutex.synchronize { client.post '/api/v2/orders/clear' }
       check_response(resp)
       resp.collect do |item|
         build_order(item)
@@ -90,13 +91,13 @@ module BitBot
 
     def sync(order)
       order_id = order.is_a?(BitBot::Order) ? order.order_id : order.to_i
-      resp = client.get '/api/v2/order', id: order_id
+      resp = mutex.synchronize { client.get '/api/v2/order', id: order_id }
       check_response(resp)
       build_order resp
     end
 
     def orders
-      resp = client.get '/api/v2/orders', market: market
+      resp = mutex.synchronize { client.get '/api/v2/orders', market: market }
       check_response(resp)
 
       resp.collect do |hash|
@@ -105,7 +106,7 @@ module BitBot
     end
 
     def account
-      resp = client.get '/api/v2/members/me'
+      resp = mutex.synchronize { client.get '/api/v2/members/me' }
       check_response(resp)
       build_account(resp)
     end
@@ -124,6 +125,10 @@ module BitBot
 
     def market
       @market ||= @options[:market] || 'btccny'
+    end
+
+    def mutex
+      @lock ||= Mutex.new
     end
 
     private
