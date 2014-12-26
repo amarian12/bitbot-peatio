@@ -115,6 +115,10 @@ module BitBot
       market[3,3].upcase
     end
 
+    def rate
+      @options[:rate] || 1
+    end
+
     def client
       @client ||= PeatioAPI::Client.new(
         access_key: @key,
